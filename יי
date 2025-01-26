@@ -1,0 +1,114 @@
+// Vehicle Management System - Complete Implementation as per instructions
+// Frontend only (React)
+// Local Storage is used to manage vehicle data persistently
+
+import React, { useState, useEffect } from 'react';
+
+// Default properties for different vehicle types
+const defaultProperties = {
+  motorcycle: { status: 'Available', mileage: 0 },
+  car: { status: 'In Maintenance', mileage: 10000 },
+  truck: { status: 'Unavailable', mileage: 50000 },
+};
+
+const App = () => {
+  const [vehicles, setVehicles] = useState([]); // List of all vehicles
+  const [newVehicle, setNewVehicle] = useState({ name: '', type: 'motorcycle', status: '', mileage: 0 }); // Form for adding vehicles
+
+  // Load vehicles from Local Storage on mount
+  useEffect(() => {
+    const savedVehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+    setVehicles(savedVehicles);
+  }, []);
+
+  // Save vehicles to Local Storage whenever they change
+  useEffect(() => {
+    localStorage.setItem('vehicles', JSON.stringify(vehicles));
+  }, [vehicles]);
+
+  // Add a new vehicle
+  const addVehicle = () => {
+    if (!newVehicle.name || !newVehicle.type) {
+      alert('Please fill out all fields.');
+      return;
+    }
+    const defaultValues = defaultProperties[newVehicle.type] || {};
+    const updatedVehicles = [...vehicles, { ...defaultValues, ...newVehicle, id: Date.now() }];
+    setVehicles(updatedVehicles);
+    setNewVehicle({ name: '', type: 'motorcycle', status: '', mileage: 0 });
+  };
+
+  // Delete a vehicle by its ID
+  const deleteVehicle = (id) => {
+    const updatedVehicles = vehicles.filter((vehicle) => vehicle.id !== id);
+    setVehicles(updatedVehicles);
+  };
+
+  // Render the main screen and garage functionality
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>Vehicle Management System</h1>
+
+      {/* Add New Vehicle Section */}
+      <div style={{ marginBottom: '20px' }}>
+        <h2>Add New Vehicle</h2>
+        <input
+          type="text"
+          placeholder="Name"
+          value={newVehicle.name}
+          onChange={(e) => setNewVehicle({ ...newVehicle, name: e.target.value })}
+          style={{ marginRight: '10px' }}
+        />
+        <select
+          value={newVehicle.type}
+          onChange={(e) => setNewVehicle({ ...newVehicle, type: e.target.value })}
+          style={{ marginRight: '10px' }}
+        >
+          <option value="motorcycle">Motorcycle</option>
+          <option value="car">Car</option>
+          <option value="truck">Truck</option>
+        </select>
+        <button onClick={addVehicle} style={{ padding: '5px 10px' }}>
+          Add Vehicle
+        </button>
+      </div>
+
+      {/* List of Vehicles */}
+      <div>
+        <h2>Vehicle List</h2>
+        {vehicles.length === 0 ? (
+          <p>No vehicles added yet.</p>
+        ) : (
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {vehicles.map((vehicle) => (
+              <li
+                key={vehicle.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '5px',
+                }}
+              >
+                <span>
+                  <strong>{vehicle.name}</strong> - {vehicle.type} - {vehicle.status} - {vehicle.mileage}km
+                </span>
+                <button
+                  onClick={() => deleteVehicle(vehicle.id)}
+                  style={{ padding: '5px 10px', color: 'white', background: 'red', border: 'none', borderRadius: '5px' }}
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
